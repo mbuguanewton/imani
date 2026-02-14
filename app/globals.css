@@ -24,3 +24,101 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@layer components {
+  .glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(231, 38, 116, 0.2); /* Subtle pink glow */
+    border-radius: 24px;
+  }
+
+  .font-handwriting {
+    font-family: var(--font-dancing-script), cursive;
+  }
+}
+
+/* Polaroid card enhancements */
+@layer utilities {
+  /* Subtle paper texture */
+  .polaroid-texture {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" result="noise"/></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.03"/></svg>');
+    background-repeat: repeat;
+  }
+
+  /* Enhanced shadow for polaroid depth */
+  .polaroid-shadow {
+    box-shadow:
+      0 20px 50px -15px rgba(0, 0, 0, 0.3),
+      0 0 1px 0 rgba(0, 0, 0, 0.1);
+  }
+
+  /* Smooth scale and lift on hover */
+  .polaroid-hover {
+    transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+}
+
+/* Create a smooth fade for the final message */
+.animate-fade-in {
+  animation: fadeIn 2s forwards;
+  animation-delay: 1s;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced rose pulse animation */
+@keyframes enhancedHeartPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.animate-enhanced-pulse {
+  animation: enhancedHeartPulse 2.5s ease-in-out infinite;
+}
+
+/* Image load animation */
+@keyframes imageLoad {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-image-load {
+  animation: imageLoad 0.6s ease-out;
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
