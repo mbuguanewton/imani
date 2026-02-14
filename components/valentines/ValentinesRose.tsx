@@ -305,7 +305,7 @@ export default function ValentinesRose() {
 
       {/* Fixed Live Footer Message - Revealed via GSAP */}
       <div
-        className="footer-message fixed bottom-0 left-0 w-full p-4 sm:p-6 z-20 pointer-events-none opacity-0 translate-y-10"
+        className="footer-message fixed bottom-0 left-0 w-full p-4 sm:p-6 z-10 pointer-events-none opacity-0 translate-y-20"
         role="region"
         aria-label="Valentine's message"
       >
