@@ -265,7 +265,7 @@ export default function ValentinesRose() {
         <button
           ref={musicButtonRef}
           onClick={toggleMusic}
-          className="group relative mt-8 bg-white/80 backdrop-blur-xl border border-rose-100 rounded-full p-3 shadow-lg hover:bg-white hover:shadow-xl transition-all active:scale-95"
+          className="group relative z-99 mt-8 bg-white/80 backdrop-blur-xl border border-rose-100 rounded-full p-4 shadow-lg hover:bg-white hover:shadow-xl transition-all active:scale-95"
           aria-label={isPlaying ? "Pause music" : "Play music"}
           title={isPlaying ? "Pause music" : "Play music"}
         >
