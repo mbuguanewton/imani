@@ -63,7 +63,7 @@ export default function ValentinesRose() {
   const containerRef = useRef<HTMLDivElement>(null);
   const roseRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const hasScrolledRef = useRef(false);
+  const musicButtonRef = useRef<HTMLButtonElement>(null);
   const [message] = useState(
     "Time and time again, I appreciate the person I've become with you. All through the years you are always by my side. I wish to keep it this way forever. You challenge me, you inspire me, you help me grow, you are my best friend, my best dish 😜 and my calm place 😌. I love you more than words can say.",
   );
@@ -77,24 +77,13 @@ export default function ValentinesRose() {
     : Math.min(8, gallery.length * 0.5 + 2);
 
   useEffect(() => {
+    // Ensure we're on the client
+    if (typeof window === "undefined") return;
+
     // Check if mobile
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener("resize", checkMobile);
-
-    // Play music on first scroll
-    const handleFirstScroll = () => {
-      if (!hasScrolledRef.current && audioRef.current) {
-        hasScrolledRef.current = true;
-        audioRef.current.volume = 0.25;
-        audioRef.current.play().catch((err) => {
-          console.log("Audio play failed:", err);
-        });
-        setIsPlaying(true);
-        window.removeEventListener("scroll", handleFirstScroll);
-      }
-    };
-    window.addEventListener("scroll", handleFirstScroll, { once: false });
 
     // GSAP Scroll Animation for Rose Scaling
     gsap.fromTo(
@@ -166,7 +155,6 @@ export default function ValentinesRose() {
     return () => {
       ScrollTrigger.getAll().forEach((t) => t.kill());
       window.removeEventListener("resize", checkMobile);
-      window.removeEventListener("scroll", handleFirstScroll);
     };
   }, [maxScale]);
 
@@ -188,6 +176,7 @@ export default function ValentinesRose() {
       if (isPlaying) {
         audioRef.current.pause();
       } else {
+        audioRef.current.volume = 0.5;
         audioRef.current.play().catch((err) => {
           console.log("Audio play failed:", err);
         });
@@ -197,7 +186,23 @@ export default function ValentinesRose() {
   };
 
   useEffect(() => {
-    // Placeholder for auto-play effect (removed - now plays on first scroll)
+    // Scroll to top on mount
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
+    // Update isPlaying state when audio plays or pauses
+    const audio = audioRef.current;
+    if (audio) {
+      const updatePlayingState = () => setIsPlaying(!audio.paused);
+      audio.addEventListener("play", updatePlayingState);
+      audio.addEventListener("pause", updatePlayingState);
+
+      return () => {
+        audio.removeEventListener("play", updatePlayingState);
+        audio.removeEventListener("pause", updatePlayingState);
+      };
+    }
   }, []);
 
   return (
@@ -208,26 +213,6 @@ export default function ValentinesRose() {
     >
       {/* Hidden Audio Player */}
       <audio ref={audioRef} src="/allofme.mp3" loop crossOrigin="anonymous" />
-
-      {/* Music Control Button */}
-      <button
-        onClick={toggleMusic}
-        className="fixed top-6 right-6 z-30 group bg-white/80 backdrop-blur-xl border border-rose-100 rounded-full p-3 shadow-lg hover:bg-white hover:shadow-xl transition-all active:scale-95"
-        aria-label={isPlaying ? "Pause music" : "Play music"}
-        title={isPlaying ? "Pause music" : "Play music"}
-      >
-        <svg
-          className="w-6 h-6 text-rose-600 group-hover:text-rose-700 transition-colors"
-          fill="currentColor"
-          viewBox="0 0 24 24"
-        >
-          {isPlaying ? (
-            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-          ) : (
-            <path d="M8 5v14l11-7z" />
-          )}
-        </svg>
-      </button>
 
       {/* Central Scaling Rose - Shifted up slightly to accommodate footer */}
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0">
@@ -275,6 +260,32 @@ export default function ValentinesRose() {
           Scroll to see our journey
         </h1>
         <div className="w-px h-24 bg-linear-to-b from-rose-400 to-transparent" />
+
+        {/* Music Control Button */}
+        <button
+          ref={musicButtonRef}
+          onClick={toggleMusic}
+          className="group relative mt-8 bg-white/80 backdrop-blur-xl border border-rose-100 rounded-full p-3 shadow-lg hover:bg-white hover:shadow-xl transition-all active:scale-95"
+          aria-label={isPlaying ? "Pause music" : "Play music"}
+          title={isPlaying ? "Pause music" : "Play music"}
+        >
+          <svg
+            className="w-6 h-6 text-rose-600 group-hover:text-rose-700 transition-colors"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            {isPlaying ? (
+              <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+            ) : (
+              <path d="M8 5v14l11-7z" />
+            )}
+          </svg>
+
+          {/* "Click me" text label inside button */}
+          <span className="absolute -top-8 left-1/2 -translate-x-1/2 font-handwriting text-rose-600 text-xs italic whitespace-nowrap animate-bounce pointer-events-none">
+            click me ♪
+          </span>
+        </button>
       </div>
 
       {/* Photo Layers */}
@@ -305,14 +316,26 @@ export default function ValentinesRose() {
           <p className="text-sm sm:text-base md:text-md italic text-rose-800/80 mb-8 leading-relaxed">
             {message}
           </p>
-          <button
-            onClick={handleConfetti}
-            aria-label="Celebrate with confetti hearts"
-            className="group relative px-6 sm:px-8 py-2 sm:py-3 bg-rose-600 rounded-full font-bold text-base sm:text-lg text-white hover:bg-rose-500 transition-all active:scale-95 shadow-[0_10px_25px_-5px_rgba(225,29,72,0.4)]"
-          >
-            Please explode me
-            <div className="absolute inset-0 rounded-full border border-white/20 group-hover:scale-110 transition-transform" />
-          </button>
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={handleConfetti}
+              aria-label="Celebrate with confetti hearts"
+              className="group relative px-6 sm:px-8 py-2 sm:py-3 bg-rose-600 rounded-full font-bold text-base sm:text-lg text-white hover:bg-rose-500 transition-all active:scale-95 shadow-[0_10px_25px_-5px_rgba(225,29,72,0.4)]"
+            >
+              Please explode me
+              <div className="absolute inset-0 rounded-full border border-white/20 group-hover:scale-110 transition-transform" />
+            </button>
+
+            <button
+              onClick={toggleMusic}
+              aria-label={isPlaying ? "Pause music" : "Play music"}
+              title={isPlaying ? "Pause music" : "Play music"}
+              className="group relative px-6 sm:px-8 py-2 sm:py-3 bg-white border border-rose-200 rounded-full font-bold text-base sm:text-lg text-rose-600 hover:bg-rose-50 transition-all active:scale-95 shadow-[0_10px_25px_-5px_rgba(225,29,72,0.2)]"
+            >
+              {isPlaying ? "Pause Music" : "Play Music"}
+              <div className="absolute inset-0 rounded-full border border-rose-600/20 group-hover:scale-110 transition-transform" />
+            </button>
+          </div>
         </div>
       </div>
     </div>
