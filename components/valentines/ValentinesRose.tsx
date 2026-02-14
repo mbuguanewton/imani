@@ -62,10 +62,12 @@ if (typeof window !== "undefined") {
 export default function ValentinesRose() {
   const containerRef = useRef<HTMLDivElement>(null);
   const roseRef = useRef<HTMLDivElement>(null);
+  const playerRef = useRef<HTMLIFrameElement>(null);
   const [message] = useState(
     "Time and time again, I appreciate the person I've become with you. All through the years you are always by my side. I wish to keep it this way forever. You challenge me, you inspire me, you help me grow, you are my best friend, my best dish 😜 and my calm place 😌. I love you more than words can say.",
   );
   const [isMobile, setIsMobile] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   // Dynamic values based on content
   const totalScreens = gallery.length + 2;
@@ -165,12 +167,81 @@ export default function ValentinesRose() {
     });
   };
 
+  const toggleMusic = () => {
+    if (playerRef.current) {
+      if (isPlaying) {
+        playerRef.current.style.display = "none";
+      } else {
+        playerRef.current.style.display = "block";
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  useEffect(() => {
+    // Load YouTube IFrame API for volume control
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName("script")[0];
+    firstScriptTag?.parentNode?.insertBefore(tag, firstScriptTag);
+
+    let player: any = null;
+    (window as any).onYouTubeIframeAPIReady = () => {
+      player = new (window as any).YT.Player(playerRef.current, {
+        events: {
+          onReady: (event: any) => {
+            event.target.setVolume(25); // Set volume to 25%
+          },
+        },
+      });
+    };
+
+    return () => {
+      if (player) {
+        player.destroy();
+      }
+    };
+  }, []);
+
   return (
     <div
       ref={containerRef}
       className="relative bg-[#fafaf9] selection:bg-rose-500/10 overflow-x-hidden"
       style={{ height: `${totalScreens * 100}vh` }}
     >
+      {/* Hidden YouTube Player */}
+      <iframe
+        ref={playerRef}
+        width="0"
+        height="0"
+        src="https://www.youtube.com/embed/CQ9vHLBI3Zs?autoplay=1&controls=0&modestbranding=1&loop=1&playlist=CQ9vHLBI3Zs"
+        title="Lo-fi Background Music"
+        frameBorder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerPolicy="strict-origin-when-cross-origin"
+        style={{ display: "none" }}
+      />
+
+      {/* Music Control Button */}
+      <button
+        onClick={toggleMusic}
+        className="fixed top-6 right-6 z-30 group bg-white/80 backdrop-blur-xl border border-rose-100 rounded-full p-3 shadow-lg hover:bg-white hover:shadow-xl transition-all active:scale-95"
+        aria-label={isPlaying ? "Pause music" : "Play music"}
+        title={isPlaying ? "Pause music" : "Play music"}
+      >
+        <svg
+          className="w-6 h-6 text-rose-600 group-hover:text-rose-700 transition-colors"
+          fill="currentColor"
+          viewBox="0 0 24 24"
+        >
+          {isPlaying ? (
+            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+          ) : (
+            <path d="M8 5v14l11-7z" />
+          )}
+        </svg>
+      </button>
+
       {/* Central Scaling Rose - Shifted up slightly to accommodate footer */}
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0">
         <div
