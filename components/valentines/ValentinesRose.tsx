@@ -207,12 +207,7 @@ export default function ValentinesRose() {
       style={{ height: `${totalScreens * 100}vh` }}
     >
       {/* Hidden Audio Player */}
-      <audio
-        ref={audioRef}
-        src="/allofme.mp3"
-        loop
-        crossOrigin="anonymous"
-      />
+      <audio ref={audioRef} src="/allofme.mp3" loop crossOrigin="anonymous" />
 
       {/* Music Control Button */}
       <button
