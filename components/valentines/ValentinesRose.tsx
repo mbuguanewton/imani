@@ -62,7 +62,8 @@ if (typeof window !== "undefined") {
 export default function ValentinesRose() {
   const containerRef = useRef<HTMLDivElement>(null);
   const roseRef = useRef<HTMLDivElement>(null);
-  const playerRef = useRef<HTMLIFrameElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const hasScrolledRef = useRef(false);
   const [message] = useState(
     "Time and time again, I appreciate the person I've become with you. All through the years you are always by my side. I wish to keep it this way forever. You challenge me, you inspire me, you help me grow, you are my best friend, my best dish 😜 and my calm place 😌. I love you more than words can say.",
   );
@@ -80,6 +81,20 @@ export default function ValentinesRose() {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener("resize", checkMobile);
+
+    // Play music on first scroll
+    const handleFirstScroll = () => {
+      if (!hasScrolledRef.current && audioRef.current) {
+        hasScrolledRef.current = true;
+        audioRef.current.volume = 0.25;
+        audioRef.current.play().catch((err) => {
+          console.log("Audio play failed:", err);
+        });
+        setIsPlaying(true);
+        window.removeEventListener("scroll", handleFirstScroll);
+      }
+    };
+    window.addEventListener("scroll", handleFirstScroll, { once: false });
 
     // GSAP Scroll Animation for Rose Scaling
     gsap.fromTo(
@@ -151,6 +166,7 @@ export default function ValentinesRose() {
     return () => {
       ScrollTrigger.getAll().forEach((t) => t.kill());
       window.removeEventListener("resize", checkMobile);
+      window.removeEventListener("scroll", handleFirstScroll);
     };
   }, [maxScale]);
 
@@ -168,39 +184,20 @@ export default function ValentinesRose() {
   };
 
   const toggleMusic = () => {
-    if (playerRef.current) {
+    if (audioRef.current) {
       if (isPlaying) {
-        playerRef.current.style.display = "none";
+        audioRef.current.pause();
       } else {
-        playerRef.current.style.display = "block";
+        audioRef.current.play().catch((err) => {
+          console.log("Audio play failed:", err);
+        });
       }
       setIsPlaying(!isPlaying);
     }
   };
 
   useEffect(() => {
-    // Load YouTube IFrame API for volume control
-    const tag = document.createElement("script");
-    tag.src = "https://www.youtube.com/iframe_api";
-    const firstScriptTag = document.getElementsByTagName("script")[0];
-    firstScriptTag?.parentNode?.insertBefore(tag, firstScriptTag);
-
-    let player: any = null;
-    (window as any).onYouTubeIframeAPIReady = () => {
-      player = new (window as any).YT.Player(playerRef.current, {
-        events: {
-          onReady: (event: any) => {
-            event.target.setVolume(25); // Set volume to 25%
-          },
-        },
-      });
-    };
-
-    return () => {
-      if (player) {
-        player.destroy();
-      }
-    };
+    // Placeholder for auto-play effect (removed - now plays on first scroll)
   }, []);
 
   return (
@@ -209,17 +206,12 @@ export default function ValentinesRose() {
       className="relative bg-[#fafaf9] selection:bg-rose-500/10 overflow-x-hidden"
       style={{ height: `${totalScreens * 100}vh` }}
     >
-      {/* Hidden YouTube Player */}
-      <iframe
-        ref={playerRef}
-        width="0"
-        height="0"
-        src="https://www.youtube.com/embed/CQ9vHLBI3Zs?autoplay=1&controls=0&modestbranding=1&loop=1&playlist=CQ9vHLBI3Zs"
-        title="Lo-fi Background Music"
-        frameBorder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        referrerPolicy="strict-origin-when-cross-origin"
-        style={{ display: "none" }}
+      {/* Hidden Audio Player */}
+      <audio
+        ref={audioRef}
+        src="/allofme.mp3"
+        loop
+        crossOrigin="anonymous"
       />
 
       {/* Music Control Button */}
